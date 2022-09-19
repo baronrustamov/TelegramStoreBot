@@ -10,7 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from time import sleep
 # [Основные переменные] =================================================
-
+	
 db = sqlite3.connect('shop.db')
 cursor = db.cursor()
 storage = MemoryStorage()
@@ -109,7 +109,10 @@ async def ownerCategoryMenu(message : types.Message):
  userID = str(message.from_user.id)
  if await checkAccess(userID) == True:
     await message.answer('''
-Управление категориями.
+<b>🗃️ Панель администратора / Категории</b>
+
+Здесь вы можете управлять категориями товаров.
+Используйте кнопки ниже.
 ''', reply_markup=keyboard.categoriesMenu)
 
  else:
@@ -158,7 +161,6 @@ async def ownerCatDescLoad(message : types.Message, state : FSMContext):
         catPhoto = catData['photo']
         catName = catData['name']
         catDesc = catData['desc']
-        print(catData.values())
         cursor.execute('INSERT INTO categories(catPhoto, catName, catDesc) VALUES(?, ?, ?)', (catPhoto, catName, catDesc))
         db.commit()
         catID = cursor.execute('SELECT catID from categories WHERE catName = ?', ([catName])).fetchall()
@@ -214,7 +216,7 @@ async def addProductChooseCategory(message : types.Message):
 async def ownerProductsMenu(message : types.Message):
     userID = str(message.from_user.id)
     if await checkAccess(userID) == True:
-        await bot.send_message(message.from_user.id, '''Панель администратора
+        await bot.send_message(message.from_user.id, '''<b>Панель администратора / Товары</b>
 
 Здесь вы можете добавлять или удалять товары.
 ''', reply_markup=keyboard.productsMenu)
@@ -363,7 +365,7 @@ async def ownerSetMoney(callback_query : types.CallbackQuery, state: FSMContext)
         await state.finish()
     await FSMSetMoney.money.set()
     await bot.send_message(callback_query.from_user.id, '''
-💻 Админ-панель \ Изменить баланс
+<b>💻 Админ-панель \ Изменить баланс</b>
 
 Сколько рублей вы хотите установить на счёте пользователя?
 ''')
@@ -386,9 +388,10 @@ async def ownerSetMoneyLoad(message : types.Message, state: FSMContext):
     db.close()
 
 async def ownerCheckDatabase(message : types.Message):
+    userID = str(message.from_user.id)
     if await checkAccess(userID) == True:
         await message.answer('''
-Админ-панель / База данных
+<b>Админ-панель / База данных</b>
 
 Здесь вы можете просмотреть содержимое базы данных.
 ''', reply_markup=keyboard.ownerDatabase)
@@ -400,7 +403,7 @@ async def ownerDbProductsLoad(callback_query : types.CallbackQuery):
     cursor = db.cursor()
     shop = cursor.execute('SELECT * FROM shop').fetchall()
     await bot.send_message(callback_query.from_user.id, '''
-Мы нашли в базе данных эти товары:
+<b>Мы нашли в базе данных эти товары:</b>
 ''', reply_markup=keyboard.genmarkup(shop))
     cursor.close()
     db.close()
@@ -410,7 +413,7 @@ async def ownerDbUsersLoad(callback_query : types.CallbackQuery):
     cursor = db.cursor()
     user = cursor.execute('SELECT * FROM users').fetchall()
     await bot.send_message(callback_query.from_user.id, '''
-Мы нашли в базе данных этих пользователей:
+<b>Мы нашли в базе данных этих пользователей:</b>
 ''', reply_markup=keyboard.genmarkup8(user))
     cursor.close()
     db.close()
@@ -458,8 +461,6 @@ async def ownerAdvertsCreate(message : types.Message):
 async def ownerAdPhotoLoad(message : types.Message, state : FSMContext):
     async with state.proxy() as adData:
         adData['adPhoto'] = message.photo[0].file_id
-        print(message.photo)
-        print(adData['adPhoto'])
     await FSMCreateAd.next()
     await message.answer('''
 Создание объявления #2
